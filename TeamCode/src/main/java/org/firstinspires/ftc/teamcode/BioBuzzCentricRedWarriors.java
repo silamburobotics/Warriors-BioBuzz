@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 /**
@@ -28,6 +29,7 @@ public class BioBuzzCentricRedWarriors extends LinearOpMode {
 
     // State variables
     private boolean isIntakeLiftUp = true;               // Default UP position
+    private final ElapsedTime gateOpenTimer = new ElapsedTime();
     private boolean isGateOpen = false;                 // false = Closed, true = Open
     private boolean isShifterOpen = false;              // false = Closed, true = Open
     private double targetTurretAngle = 0.0;             // Target angle in degrees (-90.0 to +90.0)
@@ -36,7 +38,7 @@ public class BioBuzzCentricRedWarriors extends LinearOpMode {
 
     // Hardcoded RED Alliance
     private final boolean isRedAlliance = true;
-    private boolean autoAimActive = true;
+    private boolean autoAimActive = false; // OFF by default
 
     // Vision Subsystem
     private LimelightShooterSubsystem visionSubsystem;
@@ -81,6 +83,9 @@ public class BioBuzzCentricRedWarriors extends LinearOpMode {
 
         try {
             intakeLiftRight = hardwareMap.get(Servo.class, WarriorsConfig.INTAKE_LIFT_RIGHT_NAME);
+            if (intakeLiftRight != null) {
+                intakeLiftRight.setDirection(WarriorsConfig.INTAKE_LIFT_RIGHT_REVERSED ? Servo.Direction.REVERSE : Servo.Direction.FORWARD);
+            }
         } catch (Exception e) {
             intakeLiftRight = null;
         }
@@ -88,7 +93,7 @@ public class BioBuzzCentricRedWarriors extends LinearOpMode {
         // Set initial intake lift position to UP by default
         isIntakeLiftUp = true;
         double initLeftPos = WarriorsConfig.INTAKE_LIFT_UP_POS;
-        double initRightPos = Range.clip((1.0 - initLeftPos) + WarriorsConfig.RIGHT_SERVO_TRIM_OFFSET, 0.0, 1.0);
+        double initRightPos = WarriorsConfig.INTAKE_LIFT_RIGHT_UP_POS;
         if (intakeLiftLeft != null) intakeLiftLeft.setPosition(initLeftPos);
         if (intakeLiftRight != null) intakeLiftRight.setPosition(initRightPos);
 
@@ -138,16 +143,32 @@ public class BioBuzzCentricRedWarriors extends LinearOpMode {
 
         boolean lastIntakeAState = false;
         boolean lastIntakeBState = false;
-        boolean lastIntakeLBState = false;
         boolean lastShifterAState = false;
         boolean lastShooterYState = false;
-        boolean lastAutoAimLBState = false;
+        boolean lastAutoAimRBState = false;
         double lastIntakePower = Double.NaN;
 
         while (opModeIsActive()) {
 
-            // Update Limelight Vision Subsystem filtered strictly by RED alliance tags (31, 32, 35, 36)
-            visionSubsystem.update(isRedAlliance);
+            // --- Auto-Aim Controls (Gamepad 2: Right Bumper / G2.RB = Toggle ON/OFF, Left Bumper / G2.LB = Hold-to-Aim) ---
+            if (gamepad2.right_bumper && !lastAutoAimRBState) {
+                autoAimActive = !autoAimActive;
+                if (!autoAimActive) {
+                    visionSubsystem.resetLock();
+                }
+            }
+            lastAutoAimRBState = gamepad2.right_bumper;
+
+            // Active if toggled ON via G2.RB OR held down via G2.LB
+            boolean isAutoAimEngaged = autoAimActive || gamepad2.left_bumper;
+
+            // Update Limelight Vision Subsystem: Camera stream & AprilTag processing ONLY run while auto-aim is engaged (saves CPU & battery)
+            visionSubsystem.setCameraActive(isAutoAimEngaged);
+            if (isAutoAimEngaged) {
+                visionSubsystem.update(isRedAlliance);
+            } else {
+                visionSubsystem.resetLock();
+            }
 
             // ==========================================
             // GAMEPAD 1: MECANUM DRIVE & INTAKE (Gamepad 1 ONLY)
@@ -190,14 +211,11 @@ public class BioBuzzCentricRedWarriors extends LinearOpMode {
                 lastIntakePower = intakePower;
             }
 
-            // --- Synchronized Dual Intake Lift Servos Control (Gamepad 1 - Left Bumper: Toggle UP / DOWN) ---
-            if (gamepad1.left_bumper && !lastIntakeLBState) {
-                isIntakeLiftUp = !isIntakeLiftUp;
-            }
-            lastIntakeLBState = gamepad1.left_bumper;
+            // --- Synchronized Dual Intake Lift Servos Control (Gamepad 1 - Left Bumper: hold = DOWN, release = UP) ---
+            isIntakeLiftUp = !gamepad1.left_bumper; // Hold left bumper = arms DOWN, release = arms UP
 
             double targetLeftLiftPos = isIntakeLiftUp ? WarriorsConfig.INTAKE_LIFT_UP_POS : WarriorsConfig.INTAKE_LIFT_DOWN_POS;
-            double targetRightLiftPos = Range.clip((1.0 - targetLeftLiftPos) + WarriorsConfig.RIGHT_SERVO_TRIM_OFFSET, 0.0, 1.0);
+            double targetRightLiftPos = isIntakeLiftUp ? WarriorsConfig.INTAKE_LIFT_RIGHT_UP_POS : WarriorsConfig.INTAKE_LIFT_RIGHT_DOWN_POS;
 
             if (intakeLiftLeft != null) {
                 intakeLiftLeft.setPosition(targetLeftLiftPos);
@@ -211,12 +229,23 @@ public class BioBuzzCentricRedWarriors extends LinearOpMode {
             // ==========================================
 
             // --- Axon Gate Servo (G2.B = Open, G2.X = Close) ---
+            boolean wasGateOpen = isGateOpen;
             if (gamepad2.b) {
                 isGateOpen = true;
             } else if (gamepad2.x) {
                 isGateOpen = false;
             }
-            double targetGatePos = isGateOpen ? WarriorsConfig.OPEN_POSITION : WarriorsConfig.CLOSED_POSITION;
+            if (isGateOpen && !wasGateOpen) {
+                gateOpenTimer.reset(); // gate just started opening: begin the kick
+            }
+            double targetGatePos;
+            if (!isGateOpen) {
+                targetGatePos = WarriorsConfig.CLOSED_POSITION;
+            } else if (gateOpenTimer.milliseconds() < WarriorsConfig.GATE_KICK_MS) {
+                targetGatePos = WarriorsConfig.GATE_KICK_POSITION; // opens to the kick position first...
+            } else {
+                targetGatePos = WarriorsConfig.OPEN_POSITION;      // ...then comes back to the open position
+            }
             axonGateServo.setPosition(targetGatePos);
 
             // --- Shifter Servo (Gamepad 2: Button A = Toggle Open / Closed) ---
@@ -228,20 +257,11 @@ public class BioBuzzCentricRedWarriors extends LinearOpMode {
             double targetShifterPos = isShifterOpen ? WarriorsConfig.SHIFTER_OPEN_POSITION : WarriorsConfig.SHIFTER_CLOSED_POSITION;
             shifterServo.setPosition(targetShifterPos);
 
-            // --- Auto-Aim Toggle (Gamepad 2: Left Bumper) ---
-            if (gamepad2.left_bumper && !lastAutoAimLBState) {
-                autoAimActive = !autoAimActive;
-                if (!autoAimActive) {
-                    visionSubsystem.resetLock();
-                }
-            }
-            lastAutoAimLBState = gamepad2.left_bumper;
-
             // --- Turret Auto-Aim to AprilTag when active, otherwise Center Home (0.0°) ---
             double ticksPerDegree = (WarriorsConfig.TURRET_TICKS_PER_REV * WarriorsConfig.TURRET_GEAR_RATIO) / 360.0;
             double currentTurretAngle = turret.getCurrentPosition() / ticksPerDegree;
 
-            if (autoAimActive && visionSubsystem.isTargetVisible()) {
+            if (isAutoAimEngaged && visionSubsystem.isTargetVisible()) {
                 if (Math.abs(visionSubsystem.getTxError()) > LimelightShooterSubsystem.AIM_DEADBAND_DEG) {
                     targetTurretAngle = visionSubsystem.getTurretTargetAngle(currentTurretAngle);
                 }
@@ -252,9 +272,6 @@ public class BioBuzzCentricRedWarriors extends LinearOpMode {
 
             int targetTurretTicks = (int) Math.round(targetTurretAngle * ticksPerDegree);
             turret.setTargetPosition(targetTurretTicks);
-
-            double maxTurretVelocity = WarriorsConfig.TURRET_MAX_VELOCITY_DEG_PER_SEC * ticksPerDegree;
-            turret.setVelocity(maxTurretVelocity);
             turret.setPower(WarriorsConfig.TURRET_MAX_POWER);
 
             // --- Shooter Flywheel Control (Gamepad 2: Y = Toggle ON/OFF) ---
@@ -286,7 +303,7 @@ public class BioBuzzCentricRedWarriors extends LinearOpMode {
                 shooter1.setVelocity(targetTPS);
                 shooter2.setPower(shooter1.getPower());
             } else {
-                shooter1.setVelocity(0.0);
+                shooter1.setPower(0.0);
                 shooter2.setPower(0.0);
             }
 
@@ -304,6 +321,7 @@ public class BioBuzzCentricRedWarriors extends LinearOpMode {
                     targetLeftLiftPos, targetRightLiftPos);
 
             telemetry.addData("--- Vision & Shooter Status ---", "");
+            telemetry.addData("AprilTags in View", visionSubsystem.getTagsSeenSummary());
             if (visionSubsystem.isTargetVisible()) {
                 boolean isAimed = visionSubsystem.isAimed();
                 telemetry.addData("Limelight Target", "%s Tag #%d | tx: %.1f° | ty: %.1f° | Dist: %.1fin",
@@ -313,7 +331,10 @@ public class BioBuzzCentricRedWarriors extends LinearOpMode {
                 telemetry.addData("Limelight Target", "[SEARCHING] Looking for RED tags (31, 32, 35, 36)...");
             }
 
-            telemetry.addData("Turret Auto-Aim (G2.LB)", autoAimActive ? "ACTIVE" : "OFF");
+            telemetry.addData("Turret Auto-Aim", "G2.RB Toggle: %s | G2.LB Hold: %s (Status: %s)",
+                    autoAimActive ? "ON" : "OFF",
+                    gamepad2.left_bumper ? "HELD" : "RELEASED",
+                    isAutoAimEngaged ? "ACTIVE" : "OFF (Center Home)");
             telemetry.addData("Turret Angle", "Target: %.1f° | Current: %.1f° (%d ticks)",
                     targetTurretAngle, currentTurretAngle, turret.getCurrentPosition());
             telemetry.addData("Shooter Flywheel (G2.Y)", WarriorsConfig.FLYWHEEL_ENABLED ? "RUNNING (Target: %.0f RPM)" : "STOPPED", currentTargetRPM);
