@@ -53,7 +53,7 @@ public class WarriorsConfig {
     // --- Flywheel Motors Configuration ---
     public static String MOTOR_1_NAME = "flyWheel1";
     public static String MOTOR_2_NAME = "flyWheel2";
-    public static double FLYWHEEL_OPEN_RPM = 2575.0;     // Manual RPM when shifter is OPEN / Nectar mode
+    public static double FLYWHEEL_OPEN_RPM = 2625.0;     // Manual RPM when shifter is OPEN / Nectar mode
     public static double FLYWHEEL_CLOSED_RPM = 2400.0;   // Manual RPM when shifter is CLOSED / Pollen mode
     public static double TICKS_PER_REV = 28.0;         // GoBILDA 6000 RPM motor encoder resolution
     public static boolean MOTOR_1_REVERSED = false;    // Set true if motor 1 spins opposite
