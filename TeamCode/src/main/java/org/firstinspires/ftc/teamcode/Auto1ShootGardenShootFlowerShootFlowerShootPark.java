@@ -5,6 +5,7 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Pose2d;
+import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -21,7 +22,7 @@ import com.qualcomm.robotcore.util.Range;
  * Shoot -> turn cw 90 -> forward 54 -> wait -> back 50 -> turn cw 90 -> gate open, wait -> shift right 34
  *   -> back 36 -> turn acw 90 -> gate closed -> lift DOWN -> forward 12 -> shake -> back 12 -> lift UP
  *   -> turn acw 90 -> back 50 -> shift left 24 -> turn 180 -> forward 10 -> wait -> gate open
- *   -> back 18 -> shift left 55. Intake and flywheel run to the end.
+ *   -> back 18 -> shift left 55. Everything stops at the end.
  */
 @Config
 @Autonomous(name = "1ShootGardenShootFlowerShootFlowerShootPark", group = "Auto")
@@ -86,7 +87,8 @@ public class Auto1ShootGardenShootFlowerShootFlowerShootPark extends LinearOpMod
         shooter2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         shooter1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         shooter2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        shooter1.setDirection(DcMotorSimple.Direction.FORWARD);
+        shooter1.setDirection(WarriorsConfig.MOTOR_1_REVERSED
+                ? DcMotorSimple.Direction.REVERSE : DcMotorSimple.Direction.FORWARD);
         shooter2.setDirection(WarriorsConfig.MOTOR_2_REVERSED
                 ? DcMotorSimple.Direction.REVERSE : DcMotorSimple.Direction.FORWARD);
 
@@ -150,14 +152,19 @@ public class Auto1ShootGardenShootFlowerShootFlowerShootPark extends LinearOpMod
         moveAlongHeading(drive, -BACK_5_IN);                      // 27. back
         shiftSideways(drive, SHIFT_LEFT_2_IN);                    // 28. shift left
 
-        // Intake and flywheel keep running until the period ends.
-        while (opModeIsActive()) {
-            double rpm1 = updateFlywheel(flywheelRPM);
-            telemetry.addData("Status", "Done - intake and flywheel running");
-            telemetry.addData("Flywheel RPM", "target %.0f | measured %.0f", flywheelRPM, rpm1);
-            telemetry.update();
-            sleep(20);
-        }
+        stopEverything(drive, intake, gate);
+    }
+
+    /** Stop everything: intake, flywheel, drive and gate. */
+    private void stopEverything(MecanumDrive drive, DcMotorEx intake, Servo gate) {
+        smoothedTargetRPM = 0.0;
+        shooter1.setPower(0.0);
+        shooter2.setPower(0.0);
+        intake.setPower(0.0);
+        gate.setPosition(WarriorsConfig.CLOSED_POSITION);
+        drive.setDrivePowers(new PoseVelocity2d(new Vector2d(0, 0), 0));
+        telemetry.addData("Status", "Done - everything stopped");
+        telemetry.update();
     }
 
     /** Moves the robot along its current heading: positive = forward, negative = back. */

@@ -5,6 +5,7 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Pose2d;
+import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
@@ -81,7 +82,8 @@ public class Auto1ShootGardenShootParkCamera extends LinearOpMode {
         shooter2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         shooter1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         shooter2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        shooter1.setDirection(DcMotorSimple.Direction.FORWARD);
+        shooter1.setDirection(WarriorsConfig.MOTOR_1_REVERSED
+                ? DcMotorSimple.Direction.REVERSE : DcMotorSimple.Direction.FORWARD);
         shooter2.setDirection(WarriorsConfig.MOTOR_2_REVERSED
                 ? DcMotorSimple.Direction.REVERSE : DcMotorSimple.Direction.FORWARD);
 
@@ -148,14 +150,20 @@ public class Auto1ShootGardenShootParkCamera extends LinearOpMode {
         moveAlongHeading(drive, -A_BACK_IN);            // drive back
         shiftSideways(drive, -A_SECOND_SHIFT_RIGHT_IN); // shift right again
 
-        // Intake and flywheel keep running until the period ends.
-        while (opModeIsActive()) {
-            double rpm1 = updateFlywheel(flywheelRPM);
-            telemetry.addData("Status", "Done - intake and flywheel running");
-            telemetry.addData("Flywheel RPM", "target %.0f | measured %.0f", flywheelRPM, rpm1);
-            telemetry.update();
-            sleep(20);
-        }
+        stopEverything(drive, intake, gate);
+    }
+
+    /** Stop everything: intake, flywheel, drive and gate. */
+    private void stopEverything(MecanumDrive drive, DcMotorEx intake, Servo gate) {
+        smoothedTargetRPM = 0.0;
+        shooter1.setPower(0.0);
+        shooter2.setPower(0.0);
+        intake.setPower(0.0);
+        gate.setPosition(WarriorsConfig.CLOSED_POSITION);
+        drive.setDrivePowers(new PoseVelocity2d(new Vector2d(0, 0), 0));
+        if (limelight != null) limelight.stop();
+        telemetry.addData("Status", "Done - everything stopped");
+        telemetry.update();
     }
 
     /** Looks for a red alliance AprilTag (IDs 30-37) for TAG_SEARCH_SEC seconds. True as soon as one is seen. */
