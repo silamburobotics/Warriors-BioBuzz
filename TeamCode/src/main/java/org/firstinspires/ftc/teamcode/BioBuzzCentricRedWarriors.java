@@ -228,13 +228,9 @@ public class BioBuzzCentricRedWarriors extends LinearOpMode {
             // GAMEPAD 2: GATE, SHIFTER & SHOOTER
             // ==========================================
 
-            // --- Axon Gate Servo (G2.B = Open, G2.X = Close) ---
+            // --- Axon Gate Servo (hold G2.B = Open, release = Close; G2.X does nothing) ---
             boolean wasGateOpen = isGateOpen;
-            if (gamepad2.b) {
-                isGateOpen = true;
-            } else if (gamepad2.x) {
-                isGateOpen = false;
-            }
+            isGateOpen = gamepad2.b;
             if (isGateOpen && !wasGateOpen) {
                 gateOpenTimer.reset(); // gate just started opening: begin the kick
             }
