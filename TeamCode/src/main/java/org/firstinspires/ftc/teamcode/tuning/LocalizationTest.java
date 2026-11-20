@@ -33,6 +33,11 @@ public class LocalizationTest extends LinearOpMode {
                 drive.updatePoseEstimate();
 
                 Pose2d pose = drive.localizer.getPose();
+                if (drive.localizer instanceof org.firstinspires.ftc.teamcode.PinpointLocalizer) {
+                    // Pose only updates when this says READY
+                    telemetry.addData("Pinpoint status",
+                            ((org.firstinspires.ftc.teamcode.PinpointLocalizer) drive.localizer).driver.getDeviceStatus());
+                }
                 telemetry.addData("x", pose.position.x);
                 telemetry.addData("y", pose.position.y);
                 telemetry.addData("heading (deg)", Math.toDegrees(pose.heading.toDouble()));

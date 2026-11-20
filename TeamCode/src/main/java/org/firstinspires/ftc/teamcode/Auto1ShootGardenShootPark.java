@@ -101,7 +101,7 @@ public class Auto1ShootGardenShootPark extends LinearOpMode {
         // Step 5: turn clockwise (Road Runner counterclockwise is positive, so the angle is negated).
         if (opModeIsActive()) {
             runWithFlywheel(
-                    drive.actionBuilder(drive.localizer.getPose())
+                    drive.actionBuilder(drive.getFreshPose())
                             .turn(-Math.toRadians(START_TURN_CLOCKWISE_DEG))
                             .build());
         }
@@ -115,7 +115,7 @@ public class Auto1ShootGardenShootPark extends LinearOpMode {
         // Step 8: turn anticlockwise.
         if (opModeIsActive()) {
             runWithFlywheel(
-                    drive.actionBuilder(drive.localizer.getPose())
+                    drive.actionBuilder(drive.getFreshPose())
                             .turn(Math.toRadians(END_TURN_ANTICLOCKWISE_DEG))
                             .build());
         }
@@ -142,7 +142,7 @@ public class Auto1ShootGardenShootPark extends LinearOpMode {
     /** Moves the robot along its current heading: positive = forward, negative = back. */
     private void moveAlongHeading(MecanumDrive drive, double inches) {
         if (!opModeIsActive()) return;
-        Pose2d here = drive.localizer.getPose();
+        Pose2d here = drive.getFreshPose();
         double heading = here.heading.toDouble();
         runWithFlywheel(
                 drive.actionBuilder(here)
@@ -155,7 +155,7 @@ public class Auto1ShootGardenShootPark extends LinearOpMode {
     /** Sideways move with the heading held: positive = LEFT, negative = RIGHT. Left of the heading is (-sin, cos). */
     private void shiftSideways(MecanumDrive drive, double leftInches) {
         if (!opModeIsActive()) return;
-        Pose2d here = drive.localizer.getPose();
+        Pose2d here = drive.getFreshPose();
         double heading = here.heading.toDouble();
         runWithFlywheel(
                 drive.actionBuilder(here)

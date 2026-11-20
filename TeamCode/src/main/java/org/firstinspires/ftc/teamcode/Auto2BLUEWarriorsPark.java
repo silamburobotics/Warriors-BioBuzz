@@ -139,7 +139,7 @@ public class Auto2BLUEWarriorsPark extends LinearOpMode {
     /** Moves along the robot's current heading: positive = forward, negative = back. */
     private void moveAlongHeading(MecanumDrive drive, double inches) {
         if (!opModeIsActive()) return;
-        Pose2d here = drive.localizer.getPose();
+        Pose2d here = drive.getFreshPose();
         double heading = here.heading.toDouble();
         runWithFlywheel(
                 drive.actionBuilder(here)
@@ -152,7 +152,7 @@ public class Auto2BLUEWarriorsPark extends LinearOpMode {
     /** Sideways move with the heading held: positive = LEFT, negative = RIGHT. Left of the heading is (-sin, cos). */
     private void shiftSideways(MecanumDrive drive, double leftInches) {
         if (!opModeIsActive()) return;
-        Pose2d here = drive.localizer.getPose();
+        Pose2d here = drive.getFreshPose();
         double heading = here.heading.toDouble();
         runWithFlywheel(
                 drive.actionBuilder(here)

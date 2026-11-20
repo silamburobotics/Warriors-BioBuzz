@@ -138,7 +138,7 @@ public class Auto2BLUEWarriorsUnderHive extends LinearOpMode {
 
         // Move back along the robot's current heading (opposite of forward).
         if (opModeIsActive()) {
-            Pose2d here = drive.localizer.getPose();
+            Pose2d here = drive.getFreshPose();
             double heading = here.heading.toDouble();
             runWithFlywheel(
                     drive.actionBuilder(here)
@@ -150,7 +150,7 @@ public class Auto2BLUEWarriorsUnderHive extends LinearOpMode {
 
         // Shift left (sideways, heading held). Left of the robot's heading is (-sin, cos).
         if (opModeIsActive()) {
-            Pose2d here = drive.localizer.getPose();
+            Pose2d here = drive.getFreshPose();
             double heading = here.heading.toDouble();
             runWithFlywheel(
                     drive.actionBuilder(here)
@@ -167,7 +167,7 @@ public class Auto2BLUEWarriorsUnderHive extends LinearOpMode {
 
         // Move forward along the robot's current heading.
         if (opModeIsActive()) {
-            Pose2d here = drive.localizer.getPose();
+            Pose2d here = drive.getFreshPose();
             double heading = here.heading.toDouble();
             runWithFlywheel(
                     drive.actionBuilder(here)
@@ -182,7 +182,7 @@ public class Auto2BLUEWarriorsUnderHive extends LinearOpMode {
 
         // Move back along the robot's current heading (opposite of forward).
         if (opModeIsActive()) {
-            Pose2d here = drive.localizer.getPose();
+            Pose2d here = drive.getFreshPose();
             double heading = here.heading.toDouble();
             runWithFlywheel(
                     drive.actionBuilder(here)
@@ -199,7 +199,7 @@ public class Auto2BLUEWarriorsUnderHive extends LinearOpMode {
 
         // Shift right (sideways, heading held). Right of the robot's heading is (sin, -cos).
         if (opModeIsActive()) {
-            Pose2d here = drive.localizer.getPose();
+            Pose2d here = drive.getFreshPose();
             double heading = here.heading.toDouble();
             runWithFlywheel(
                     drive.actionBuilder(here)
@@ -218,7 +218,7 @@ public class Auto2BLUEWarriorsUnderHive extends LinearOpMode {
 
         // Shift left (sideways, heading held). Left of the robot's heading is (-sin, cos).
         if (opModeIsActive()) {
-            Pose2d here = drive.localizer.getPose();
+            Pose2d here = drive.getFreshPose();
             double heading = here.heading.toDouble();
             runWithFlywheel(
                     drive.actionBuilder(here)
@@ -250,7 +250,7 @@ public class Auto2BLUEWarriorsUnderHive extends LinearOpMode {
 
         // Move back.
         if (opModeIsActive()) {
-            Pose2d here = drive.localizer.getPose();
+            Pose2d here = drive.getFreshPose();
             runWithFlywheel(
                     drive.actionBuilder(here)
                             .lineToX(here.position.x - FALLBACK_BACK_IN)
@@ -260,7 +260,7 @@ public class Auto2BLUEWarriorsUnderHive extends LinearOpMode {
         // Turn anticlockwise (Road Runner counterclockwise is positive).
         if (opModeIsActive()) {
             runWithFlywheel(
-                    drive.actionBuilder(drive.localizer.getPose())
+                    drive.actionBuilder(drive.getFreshPose())
                             .turn(Math.toRadians(FALLBACK_TURN_ANTICLOCKWISE_DEG))
                             .build());
         }
@@ -276,7 +276,7 @@ public class Auto2BLUEWarriorsUnderHive extends LinearOpMode {
 
         // Move back along the robot's current heading (opposite of forward).
         if (opModeIsActive()) {
-            Pose2d here = drive.localizer.getPose();
+            Pose2d here = drive.getFreshPose();
             double heading = here.heading.toDouble();
             runWithFlywheel(
                     drive.actionBuilder(here)
@@ -288,7 +288,7 @@ public class Auto2BLUEWarriorsUnderHive extends LinearOpMode {
 
         // Shift right (sideways, heading held). Right of the robot's heading is (sin, -cos).
         if (opModeIsActive()) {
-            Pose2d here = drive.localizer.getPose();
+            Pose2d here = drive.getFreshPose();
             double heading = here.heading.toDouble();
             runWithFlywheel(
                     drive.actionBuilder(here)
@@ -317,7 +317,7 @@ public class Auto2BLUEWarriorsUnderHive extends LinearOpMode {
     /** Sideways move with the heading held: positive = LEFT, negative = RIGHT. Left of the heading is (-sin, cos). */
     private void shiftSideways(MecanumDrive drive, double leftInches) {
         if (!opModeIsActive()) return;
-        Pose2d here = drive.localizer.getPose();
+        Pose2d here = drive.getFreshPose();
         double heading = here.heading.toDouble();
         runWithFlywheel(
                 drive.actionBuilder(here)

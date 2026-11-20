@@ -256,6 +256,12 @@ MecanumDrive {
         FlightRecorder.write("MECANUM_PARAMS", PARAMS);
     }
 
+    /** Reads the newest pose from the localizer first, so a path built from it starts where the robot really is. */
+    public Pose2d getFreshPose() {
+        updatePoseEstimate();
+        return localizer.getPose();
+    }
+
     public void setDrivePowers(PoseVelocity2d powers) {
         MecanumKinematics.WheelVelocities<Time> wheelVels = new MecanumKinematics(1).inverse(
                 PoseVelocity2dDual.constant(powers, 1));
