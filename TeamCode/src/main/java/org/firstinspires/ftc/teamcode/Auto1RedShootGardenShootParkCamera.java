@@ -39,7 +39,8 @@ public class Auto1RedShootGardenShootParkCamera extends LinearOpMode {
     public static double SMALL_SHIFT_LEFT_IN = 3.0;            // small shift left
     public static double SMALL_SHIFT_RIGHT_IN = 4.0;           // small shift right
     public static double MID_WAIT_SEC = 2.0;                   // wait before the big shift left
-    public static double BIG_SHIFT_LEFT_IN = 48.0;             // shift left
+    public static double MID_BACK_IN = 2.0;                    // move back after the wait, before the big shift left
+    public static double BIG_SHIFT_LEFT_IN = 48.0;            // shift left
     public static double FOUND_WAIT_SEC = 1.0;                 // tag found: wait after opening the gate
     public static double SHIFT_RIGHT_IN = 34.0;      // first shift right (both outcomes)
     public static double BACK_IN = 80.0;             // drive back (both outcomes)
@@ -129,6 +130,9 @@ public class Auto1RedShootGardenShootParkCamera extends LinearOpMode {
 
         // Step 9: wait (flywheel keeps running).
         holdFlywheel(flywheelRPM, MID_WAIT_SEC, "Waiting");
+
+        // Step 9b: move back a little before the big shift left.
+        moveAlongHeading(drive, -MID_BACK_IN);
 
         // Step 10: shift left.
         shiftSideways(drive, BIG_SHIFT_LEFT_IN);
