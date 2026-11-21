@@ -26,10 +26,10 @@ public class WarriorsConfig {
     public static double INTAKE_POWER = 1.0;
     public static String INTAKE_LIFT_LEFT_NAME = "intakeLiftLeft";
     public static String INTAKE_LIFT_RIGHT_NAME = "intakeLiftRight";
-    public static double INTAKE_LIFT_UP_POS = 0.835;       // UP height position
-    public static double INTAKE_LIFT_DOWN_POS = 0.435;     // DOWN height position
-    public static double INTAKE_LIFT_RIGHT_UP_POS = 0.74;   // Right lift servo UP position (used directly, not mirrored)
-    public static double INTAKE_LIFT_RIGHT_DOWN_POS = 0.345; // Right lift servo DOWN position (used directly, not mirrored)
+    public static double INTAKE_LIFT_UP_POS = 0.375;      // Shared UP height position for both arms (Right servo hardware mirrored)
+    public static double INTAKE_LIFT_DOWN_POS = 0.77;      // Shared DOWN height position for both arms (Right servo hardware mirrored)
+    public static double INTAKE_LIFT_RIGHT_UP_POS = 0.375; // Legacy alias matching INTAKE_LIFT_UP_POS
+    public static double INTAKE_LIFT_RIGHT_DOWN_POS = 0.78; // Legacy alias matching INTAKE_LIFT_DOWN_POS
     public static boolean INTAKE_LIFT_RIGHT_REVERSED = true; // Set true if right intake lift servo is reversed
 
     // --- Axon Gate & Shifter Servos ---

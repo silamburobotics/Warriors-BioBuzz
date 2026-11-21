@@ -215,7 +215,7 @@ public class BioBuzzCentricRedWarriors extends LinearOpMode {
             isIntakeLiftUp = !gamepad1.left_bumper; // Hold left bumper = arms DOWN, release = arms UP
 
             double targetLeftLiftPos = isIntakeLiftUp ? WarriorsConfig.INTAKE_LIFT_UP_POS : WarriorsConfig.INTAKE_LIFT_DOWN_POS;
-            double targetRightLiftPos = isIntakeLiftUp ? WarriorsConfig.INTAKE_LIFT_RIGHT_UP_POS : WarriorsConfig.INTAKE_LIFT_RIGHT_DOWN_POS;
+            double targetRightLiftPos = isIntakeLiftUp ? WarriorsConfig.INTAKE_LIFT_UP_POS : WarriorsConfig.INTAKE_LIFT_DOWN_POS;
 
             if (intakeLiftLeft != null) {
                 intakeLiftLeft.setPosition(targetLeftLiftPos);

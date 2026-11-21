@@ -27,6 +27,7 @@ import com.qualcomm.robotcore.util.Range;
  * The turret auto-aims at the MIDDLE of the red LEFT (31,32) and RIGHT (35,36) tag sets when both are visible (re-centers to 0 deg if the tags are lost). Turret must start centered.
  * Intake and flywheel run to the end. Flywheel RPM comes from the battery voltage (2860 if unreadable).
  */
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 @Config
 @Autonomous(name = "1RedCamera", group = "Auto")
 public class Auto1RedCamera extends LinearOpMode {
@@ -103,16 +104,22 @@ public class Auto1RedCamera extends LinearOpMode {
         gate.setPosition(WarriorsConfig.OPEN_POSITION);
         shifter.setPosition(WarriorsConfig.SHIFTER_CLOSED_POSITION);
 
-        // Right intake lift servo, same as teleop: starts UP. (null if it is not in the robot configuration)
-        Servo intakeLiftRight;
+        // Dual Synchronized Intake Lift Servos (Left & Right), same as teleop: start UP.
+        Servo intakeLiftLeft, intakeLiftRight;
+        try {
+            intakeLiftLeft = hardwareMap.get(Servo.class, WarriorsConfig.INTAKE_LIFT_LEFT_NAME);
+        } catch (Exception e) {
+            intakeLiftLeft = null;
+        }
         try {
             intakeLiftRight = hardwareMap.get(Servo.class, WarriorsConfig.INTAKE_LIFT_RIGHT_NAME);
             if (intakeLiftRight != null) {
-                intakeLiftRight.setDirection(Servo.Direction.REVERSE);
+                intakeLiftRight.setDirection(WarriorsConfig.INTAKE_LIFT_RIGHT_REVERSED ? Servo.Direction.REVERSE : Servo.Direction.FORWARD);
             }
         } catch (Exception e) {
             intakeLiftRight = null;
         }
+        if (intakeLiftLeft != null) intakeLiftLeft.setPosition(WarriorsConfig.INTAKE_LIFT_UP_POS);
         if (intakeLiftRight != null) intakeLiftRight.setPosition(WarriorsConfig.INTAKE_LIFT_UP_POS);
 
         // Flywheels
@@ -162,10 +169,10 @@ public class Auto1RedCamera extends LinearOpMode {
         gate.setPosition(WarriorsConfig.CLOSED_POSITION);                     // 4. gate closed
         moveAlongHeading(drive, -OPEN_BACK_IN);                               // 5. back
         shiftSideways(drive, -OPEN_SHIFT_RIGHT_IN);                           // 6. shift right
-        liftDown(intakeLiftRight);                                            // 7. right lift DOWN
+        liftDown(intakeLiftLeft, intakeLiftRight);                                            // 7. right lift DOWN
         moveAlongHeading(drive, OPEN_FORWARD_IN);                             // 8. forward
         holdFlywheel(rpm, OPEN_WAIT_SEC, "Waiting");                          // 9. wait
-        liftUp(intakeLiftRight);                                              // 10. right lift UP
+        liftUp(intakeLiftLeft, intakeLiftRight);                                              // 10. right lift UP
         intake.setPower(0.0);                                                 //     stop intake
         // 11. shift left, looking for the RED AprilTag WHILE driving (the search window starts now).
         ElapsedTime tagTimer = new ElapsedTime();
@@ -199,11 +206,11 @@ public class Auto1RedCamera extends LinearOpMode {
             gate.setPosition(WarriorsConfig.CLOSED_POSITION);
             moveAlongHeading(drive, -F_BACK_1_IN);
             turnDegrees(drive, F_TURN_1_DEG);
-            liftDown(intakeLiftRight);
+            liftDown(intakeLiftLeft, intakeLiftRight);
             moveAlongHeading(drive, F_FORWARD_1_IN);
             holdFlywheel(rpm, F_WAIT_1_SEC, "Waiting");
             moveAlongHeading(drive, -F_BACK_2_IN);
-            liftUp(intakeLiftRight);
+            liftUp(intakeLiftLeft, intakeLiftRight);
             shiftSideways(drive, -F_SHIFT_RIGHT_2_IN);
             moveAlongHeading(drive, F_FORWARD_2_IN);
         } else {
@@ -212,7 +219,7 @@ public class Auto1RedCamera extends LinearOpMode {
             moveAlongHeading(drive, -N_BACK_IN);
             shiftSideways(drive, N_SHIFT_LEFT_1_IN);
             turnDegrees(drive, N_TURN_DEG);
-            liftDown(intakeLiftRight);
+            liftDown(intakeLiftLeft, intakeLiftRight);
             moveAlongHeading(drive, N_FORWARD_1_IN);
             manualTurretAngle = NOT_FOUND_TURRET_ANGLE_DEG;
             manualTurret = true; // turret MOTOR moves to the fixed angle from 0 (no hand turning); auto-aim is off for the rest of the auto
@@ -224,7 +231,7 @@ public class Auto1RedCamera extends LinearOpMode {
             moveAlongHeading(drive, N_FORWARD_2_IN);
             holdFlywheel(rpm, N_WAIT_SEC, "Waiting");
             moveAlongHeading(drive, -N_BACK_2_IN);
-            liftUp(intakeLiftRight);
+            liftUp(intakeLiftLeft, intakeLiftRight);
             manualTurretAngle = 0.0; // turret MOTOR goes back to the 0 deg home position
             turnDegrees(drive, N_TURN_2_DEG);
             moveAlongHeading(drive, -N_BACK_3_IN);
@@ -241,12 +248,14 @@ public class Auto1RedCamera extends LinearOpMode {
         vision.stop(); // done with the camera
     }
 
-    private void liftDown(Servo lift) {
-        if (lift != null && opModeIsActive()) lift.setPosition(WarriorsConfig.INTAKE_LIFT_DOWN_POS);
+    private void liftDown(Servo liftLeft, Servo liftRight) {
+        if (liftLeft != null && opModeIsActive()) liftLeft.setPosition(WarriorsConfig.INTAKE_LIFT_DOWN_POS);
+        if (liftRight != null && opModeIsActive()) liftRight.setPosition(WarriorsConfig.INTAKE_LIFT_DOWN_POS);
     }
 
-    private void liftUp(Servo lift) {
-        if (lift != null && opModeIsActive()) lift.setPosition(WarriorsConfig.INTAKE_LIFT_UP_POS);
+    private void liftUp(Servo liftLeft, Servo liftRight) {
+        if (liftLeft != null && opModeIsActive()) liftLeft.setPosition(WarriorsConfig.INTAKE_LIFT_UP_POS);
+        if (liftRight != null && opModeIsActive()) liftRight.setPosition(WarriorsConfig.INTAKE_LIFT_UP_POS);
     }
 
     /** Moves the robot along its current heading: positive = forward, negative = back. */
