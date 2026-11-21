@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.dashboard.config.Config;
+import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.VoltageSensor;
 
 /**
  * Configuration Parameters & Tunables for Team WARRIORS.
@@ -59,4 +61,34 @@ public class WarriorsConfig {
     public static boolean MOTOR_1_REVERSED = false;    // Set true if motor 1 spins opposite
     public static boolean MOTOR_2_REVERSED = true;     // Set true if motor 2 spins opposite to motor 1
     public static boolean FLYWHEEL_ENABLED = false;    // Toggle flywheel motors ON/OFF
+
+    // --- Battery-based flywheel speed ---
+    public static double BATTERY_HIGH_V = 13.0;          // above this voltage -> HIGH_BATTERY_RPM
+    public static double BATTERY_LOW_V = 12.5;           // below this voltage -> LOW_BATTERY_RPM
+    public static double HIGH_BATTERY_RPM = 2800.0;      // battery over BATTERY_HIGH_V
+    public static double MID_BATTERY_RPM = 2860.0;       // battery from BATTERY_LOW_V to BATTERY_HIGH_V (also the default if unreadable)
+    public static double LOW_BATTERY_RPM = 2900.0;       // battery under BATTERY_LOW_V
+
+    /** Lowest valid voltage reading from the hubs, or -1 if it cannot be read. */
+    public static double readBatteryVoltage(HardwareMap hardwareMap) {
+        double lowest = Double.POSITIVE_INFINITY;
+        try {
+            for (VoltageSensor sensor : hardwareMap.voltageSensor) {
+                double v = sensor.getVoltage();
+                if (v > 0 && !Double.isNaN(v) && !Double.isInfinite(v) && v < lowest) lowest = v;
+            }
+        } catch (Exception e) {
+            return -1;
+        }
+        return Double.isInfinite(lowest) ? -1 : lowest;
+    }
+
+    /** Flywheel RPM for the current battery voltage. Read it once at the start; falls back to MID_BATTERY_RPM. */
+    public static double getBatteryAdjustedRPM(HardwareMap hardwareMap) {
+        double v = readBatteryVoltage(hardwareMap);
+        if (v < 0) return MID_BATTERY_RPM;
+        if (v > BATTERY_HIGH_V) return HIGH_BATTERY_RPM;
+        if (v >= BATTERY_LOW_V) return MID_BATTERY_RPM;
+        return LOW_BATTERY_RPM;
+    }
 }
