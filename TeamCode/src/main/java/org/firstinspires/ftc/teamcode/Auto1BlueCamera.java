@@ -27,6 +27,9 @@ import com.qualcomm.robotcore.util.Range;
  * The turret auto-aims at the MIDDLE of the blue LEFT (39,40) and RIGHT (43,44) tag sets when both are visible (re-centers to 0 deg if the tags are lost). Turret must start centered.
  * Intake and flywheel run to the end. Flywheel RPM comes from the battery voltage (2860 if unreadable).
  */
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
+
+@Disabled
 @Config
 @Autonomous(name = "1BlueCamera", group = "Auto")
 public class Auto1BlueCamera extends LinearOpMode {

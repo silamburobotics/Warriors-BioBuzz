@@ -234,6 +234,18 @@ public class LimelightShooterSubsystem {
         return tagsSeenSummary;
     }
 
+    public String getTagSetSummary() {
+        return tagsSeenSummary;
+    }
+
+    public boolean hasBothTagSets() {
+        return targetVisible;
+    }
+
+    public double getTurretTargetAngleToMidpoint(double currentTurretAngle) {
+        return getTurretTargetAngle(currentTurretAngle);
+    }
+
     public boolean isAimed() {
         return targetVisible && Math.abs(getTxError()) <= AIM_DEADBAND_DEG;
     }

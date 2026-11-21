@@ -32,24 +32,25 @@ public class Auto1Red extends LinearOpMode {
 
 
     // Opening
+    public static double INITIAL_BACK_IN = 3.0;                // move back during spin-up before initial shooting
     public static double SPINUP_WAIT_SEC = 2.5;
     public static double SHOOT_WAIT_SEC = 1.0;
-    public static double OPEN_BACK_IN = 10.0;
-    public static double OPEN_SHIFT_RIGHT_IN = 50.0;
-    public static double OPEN_FORWARD_IN = 8.0;
+    public static double OPEN_BACK_IN = 12.0;
+    public static double OPEN_SHIFT_RIGHT_IN = 65.5;
+    public static double OPEN_FORWARD_IN = 13.5;
     public static double OPEN_WAIT_SEC = 1.0;
-    public static double OPEN_SHIFT_LEFT_IN = 48.0;
+    public static double OPEN_SHIFT_LEFT_IN = 66.0;
 
     // Path (turn sign: + = anticlockwise, - = clockwise)
     public static double F_GATE_WAIT_SEC = 1.0;
-    public static double F_SHIFT_RIGHT_1_IN = 34.0;
+    public static double F_SHIFT_RIGHT_1_IN = 40.0;
     public static double F_BACK_1_IN = 30.0;
-    public static double F_TURN_1_DEG = -90.0;        // clockwise 90
-    public static double F_FORWARD_1_IN = 12.0;
+    public static double F_TURN_1_DEG = 90.0;         // anticlockwise 90
+    public static double F_FORWARD_1_IN = 17.0;
     public static double F_WAIT_1_SEC = 2.0;
     public static double F_BACK_2_IN = 12.0;
-    public static double F_SHIFT_RIGHT_2_IN = 50.0;
-    public static double F_FORWARD_2_IN = 16.0;
+    public static double F_SHIFT_RIGHT_2_IN = 62.0;
+    public static double F_FORWARD_2_IN = 20.0;
 
 
     private DcMotorEx shooter1;
@@ -74,16 +75,22 @@ public class Auto1Red extends LinearOpMode {
         gate.setPosition(WarriorsConfig.OPEN_POSITION);
         shifter.setPosition(WarriorsConfig.SHIFTER_CLOSED_POSITION);
 
-        // Right intake lift servo, same as teleop: starts UP. (null if it is not in the robot configuration)
-        Servo intakeLiftRight;
+        // Dual Synchronized Intake Lift Servos (Left & Right), same as teleop: start UP.
+        Servo intakeLiftLeft, intakeLiftRight;
+        try {
+            intakeLiftLeft = hardwareMap.get(Servo.class, WarriorsConfig.INTAKE_LIFT_LEFT_NAME);
+        } catch (Exception e) {
+            intakeLiftLeft = null;
+        }
         try {
             intakeLiftRight = hardwareMap.get(Servo.class, WarriorsConfig.INTAKE_LIFT_RIGHT_NAME);
             if (intakeLiftRight != null) {
-                intakeLiftRight.setDirection(Servo.Direction.REVERSE);
+                intakeLiftRight.setDirection(WarriorsConfig.INTAKE_LIFT_RIGHT_REVERSED ? Servo.Direction.REVERSE : Servo.Direction.FORWARD);
             }
         } catch (Exception e) {
             intakeLiftRight = null;
         }
+        if (intakeLiftLeft != null) intakeLiftLeft.setPosition(WarriorsConfig.INTAKE_LIFT_UP_POS);
         if (intakeLiftRight != null) intakeLiftRight.setPosition(WarriorsConfig.INTAKE_LIFT_UP_POS);
 
         // Flywheels
@@ -108,16 +115,17 @@ public class Auto1Red extends LinearOpMode {
 
         // ---------- Opening ----------
         updateFlywheel(rpm);                                                  // 1. flywheel on, gate already open
-        holdFlywheel(rpm, SPINUP_WAIT_SEC, "Spinning up");                    // 2. wait for spin-up
+        moveAlongHeading(drive, -INITIAL_BACK_IN);                            // 2. move 1.0" back WHILE flywheel spins up
+        holdFlywheel(rpm, SPINUP_WAIT_SEC, "Spinning up");                    // 3. wait for remaining spin-up
         intake.setPower(WarriorsConfig.INTAKE_POWER);                         // 3. intake on
         holdFlywheel(rpm, SHOOT_WAIT_SEC, "Shooting (gate already open)");    //    wait while shooting
         gate.setPosition(WarriorsConfig.CLOSED_POSITION);                     // 4. gate closed
         moveAlongHeading(drive, -OPEN_BACK_IN);                               // 5. back
         shiftSideways(drive, -OPEN_SHIFT_RIGHT_IN);                           // 6. shift right
-        liftDown(intakeLiftRight);                                            // 7. right lift DOWN
+        liftDown(intakeLiftLeft, intakeLiftRight);                             // 7. lift DOWN
         moveAlongHeading(drive, OPEN_FORWARD_IN);                             // 8. forward
         holdFlywheel(rpm, OPEN_WAIT_SEC, "Waiting");                          // 9. wait
-        liftUp(intakeLiftRight);                                              // 10. right lift UP
+        liftUp(intakeLiftLeft, intakeLiftRight);                               // 10. lift UP
         intake.setPower(0.0);                                                 //     stop intake
         shiftSideways(drive, OPEN_SHIFT_LEFT_IN);                             // 11. shift left
         if (opModeIsActive()) intake.setPower(WarriorsConfig.INTAKE_POWER);  // 12. start intake
@@ -129,11 +137,11 @@ public class Auto1Red extends LinearOpMode {
         gate.setPosition(WarriorsConfig.CLOSED_POSITION);
         moveAlongHeading(drive, -F_BACK_1_IN);
         turnDegrees(drive, F_TURN_1_DEG);
-        liftDown(intakeLiftRight);
+        liftDown(intakeLiftLeft, intakeLiftRight);
         moveAlongHeading(drive, F_FORWARD_1_IN);
         holdFlywheel(rpm, F_WAIT_1_SEC, "Waiting");
         moveAlongHeading(drive, -F_BACK_2_IN);
-        liftUp(intakeLiftRight);
+        liftUp(intakeLiftLeft, intakeLiftRight);
         shiftSideways(drive, -F_SHIFT_RIGHT_2_IN);
         moveAlongHeading(drive, F_FORWARD_2_IN);
 
@@ -147,12 +155,14 @@ public class Auto1Red extends LinearOpMode {
         }
     }
 
-    private void liftDown(Servo lift) {
-        if (lift != null && opModeIsActive()) lift.setPosition(WarriorsConfig.INTAKE_LIFT_DOWN_POS);
+    private void liftDown(Servo liftLeft, Servo liftRight) {
+        if (liftLeft != null && opModeIsActive()) liftLeft.setPosition(WarriorsConfig.INTAKE_LIFT_DOWN_POS);
+        if (liftRight != null && opModeIsActive()) liftRight.setPosition(WarriorsConfig.INTAKE_LIFT_DOWN_POS);
     }
 
-    private void liftUp(Servo lift) {
-        if (lift != null && opModeIsActive()) lift.setPosition(WarriorsConfig.INTAKE_LIFT_UP_POS);
+    private void liftUp(Servo liftLeft, Servo liftRight) {
+        if (liftLeft != null && opModeIsActive()) liftLeft.setPosition(WarriorsConfig.INTAKE_LIFT_UP_POS);
+        if (liftRight != null && opModeIsActive()) liftRight.setPosition(WarriorsConfig.INTAKE_LIFT_UP_POS);
     }
 
     /** Moves the robot along its current heading: positive = forward, negative = back. */

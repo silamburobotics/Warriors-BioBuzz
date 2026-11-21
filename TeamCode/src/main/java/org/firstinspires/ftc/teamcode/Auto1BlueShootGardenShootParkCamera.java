@@ -7,6 +7,7 @@ import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -25,7 +26,7 @@ import com.qualcomm.robotcore.util.Range;
  *   Not found: shift right 34 -> drive back 80 -> shift right 18.
  * Intake and flywheel run to the end.
  */
-@Config
+                                                                                                                                               @Config
 @Autonomous(name = "1BlueShootGardenShootParkCamera", group = "Auto")
 public class Auto1BlueShootGardenShootParkCamera extends LinearOpMode {
 
