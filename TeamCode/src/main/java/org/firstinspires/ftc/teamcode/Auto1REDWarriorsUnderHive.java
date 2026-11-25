@@ -7,6 +7,7 @@ import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -24,6 +25,8 @@ import com.qualcomm.robotcore.util.Range;
  * A (tag found): open gate -> wait -> drive back -> shift right.
  * B (no tag):    drive back -> turn 180 -> open gate -> wait -> shift left.
  */
+@Disabled
+
 @Config
 @Autonomous(name = "1REDWarriorsUnderHive", group = "Auto")
 public class Auto1REDWarriorsUnderHive extends LinearOpMode {

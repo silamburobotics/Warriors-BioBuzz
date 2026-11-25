@@ -8,6 +8,7 @@ import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -24,6 +25,7 @@ import com.qualcomm.robotcore.util.Range;
  *           -> drive forward -> drive back -> strafe right -> turn
  *           -> drive forward. Intake and flywheel run to the end.
  */
+@Disabled
 @Config
 @Autonomous(name = "2REDWarriorsUnderHive", group = "Auto")
 public class Auto2REDWarriorsUnderHive extends LinearOpMode {

@@ -8,6 +8,7 @@ import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -22,6 +23,8 @@ import com.qualcomm.robotcore.util.Range;
  * Shooter on (gate already open, intake off) -> wait 3 s -> intake on, wait 3 s (shooting) -> gate closed
  * -> move right -> move back -> move right -> stop everything.
  */
+@Disabled
+
 @Config
 @Autonomous(name = "1BLUEWarriorsPark", group = "Auto")
 public class Auto1BLUEWarriorsPark extends LinearOpMode {

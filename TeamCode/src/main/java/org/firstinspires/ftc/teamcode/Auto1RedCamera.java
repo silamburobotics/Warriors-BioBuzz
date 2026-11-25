@@ -28,6 +28,7 @@ import com.qualcomm.robotcore.util.Range;
  * Intake and flywheel run to the end. Flywheel RPM comes from the battery voltage (2860 if unreadable).
  */
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
+@Disabled
 @Config
 @Autonomous(name = "1RedCamera", group = "Auto")
 public class Auto1RedCamera extends LinearOpMode {

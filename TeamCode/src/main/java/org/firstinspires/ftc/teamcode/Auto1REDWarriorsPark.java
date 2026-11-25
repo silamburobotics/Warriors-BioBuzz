@@ -22,6 +22,7 @@ import com.qualcomm.robotcore.util.Range;
  * Shooter on (gate already open, intake off) -> wait 3 s -> intake on, wait 3 s (shooting) -> gate closed
  * -> move right -> move back -> move right -> stop everything.
  */
+
 @Config
 @Autonomous(name = "1REDWarriorsPark", group = "Auto")
 public class Auto1REDWarriorsPark extends LinearOpMode {

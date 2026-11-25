@@ -8,6 +8,7 @@ import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -24,6 +25,7 @@ import com.qualcomm.robotcore.util.Range;
  *   -> shake (with lift wiggle) -> wait 2 s -> back 8 -> lift UP -> right 12 -> forward 8
  *   -> gate open, wait 3 s (second shot) -> gate closed -> back 8 -> left 50 -> stop everything.
  */
+@Disabled
 @Config
 @Autonomous(name = "2ShootFlowerShootParkCamera", group = "Auto")
 public class Auto2ShootFlowerShootParkCamera extends LinearOpMode {

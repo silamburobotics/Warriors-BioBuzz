@@ -7,6 +7,7 @@ import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -22,6 +23,8 @@ import com.qualcomm.robotcore.util.Range;
  *   -> turn clockwise -> forward -> back -> turn anticlockwise (right lift stays UP)
  *   -> open gate -> wait -> shift right -> drive back -> shift right.
  */
+
+@Disabled
 @Config
 @Autonomous(name = "1ShootGardenShootPark", group = "Auto")
 public class Auto1ShootGardenShootPark extends LinearOpMode {

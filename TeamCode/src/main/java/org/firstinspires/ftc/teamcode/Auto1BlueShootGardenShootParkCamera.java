@@ -26,7 +26,8 @@ import com.qualcomm.robotcore.util.Range;
  *   Not found: shift right 34 -> drive back 80 -> shift right 18.
  * Intake and flywheel run to the end.
  */
-                                                                                                                                               @Config
+@Disabled
+@Config
 @Autonomous(name = "1BlueShootGardenShootParkCamera", group = "Auto")
 public class Auto1BlueShootGardenShootParkCamera extends LinearOpMode {
 
